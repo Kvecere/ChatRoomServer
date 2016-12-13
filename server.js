@@ -7,6 +7,8 @@ var usernames = [];
 // ARRAY HOLDING REPONSE OBJECTS
 var clientList = [];
 // INDEX & USERNAME ROUTE
+
+// user=([%20]*\w+[%20]*)
 addRoute("GET", /^\/\?user=\w+$/,/user=(\w+)/,function(req, res, data) {
 	if(usernames.indexOf(data.user) != -1){
 		clientList.push(res);

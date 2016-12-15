@@ -1,25 +1,13 @@
-// TODO: FIX LIGHTBOX DISAPPEARING AFTER REFRESH PAGE
 function repeatedlySendRequest(username) {
 	var req = new XMLHttpRequest();
-	req.open("GET", "http://172.17.14.98:8000/?user=" + username, true);   
+	req.open("GET", "http://localhost:8000/?user=" + username, true);   
 	req.send(null);
 	req.addEventListener("load", function() {     
-		var data = JSON.parse(req.responseText);
-		// EVENT HANDLERS. TO CHANGE INTO EVENT EMITTERS
-		if(data.event == "enter"){
-
-			document.getElementById("messages").innerHTML +="<p><strong>Chat Server: <i>" + data.user + "</strong> entered the chat room" + "</i></p>";
-			//document.getElementById("messages").innerHTML += "<p><strong>Chat Server: <i>" + data.user + "</strong> entered the chat room" + "</i></p>";
-		} else if(data.event == "leave"){
-			document.getElementById("messages").innerHTML += "<p><strong>Chat Server: <i>" + data.user + "</strong> " + "left the chat room" + "</i></p>";
-		} else if (data.event =="message"){
-			// document.getElementById("msgTextArea").innerHTML += "<p><strong>" + data.user + ":</strong> " + data.message + "</p>"; 
-  var msgTemplate = document.getElementById("msgTemplate");
-  var msgDisplay  = document.getElementById("messages");
-  var data = {
-	username: data.user,
-	message: ": " + data.message
-  };
+    var data = JSON.parse(req.responseText);
+    chatServer.emit(data.event,data);
+    repeatedlySendRequest(username);
+	}); 
+}
 
 function EventEmitter() { this.eventListeners = {};}//eventName: handler
 
@@ -37,10 +25,42 @@ EventEmitter.prototype.on=function(eventStr, handler) {
 		seinfeld.push(handler);
 	}
 }
+EventEmitter.prototype.emit = function(eventStr){
+  var args = Array.prototype.slice.call(arguments,1);
 
-EventEmitter.prototype.emit=function(eventStr,handler){
-	
-}
+  if(eventStr in this.eventListeners){
+    this.eventListeners[eventStr].forEach(function(func){
+      func.apply(null,args);
+    });
+  }
+};
+
+var chatServer = new EventEmitter();
+
+chatServer.on("enter",function(data){
+  document.getElementById("messages").innerHTML += "<p><strong>Chat Server: <i>" + data.user + "</strong> entered the chat room" + "</i></p>";
+});
+
+chatServer.on("leave",function(data){
+  document.getElementById("messages").innerHTML += "<p><strong>Chat Server: <i>" + data.user + "</strong> " + "left the chat room" + "</i></p>";  
+});
+
+chatServer.on("message",function(data){
+  var msgTemplate = document.getElementById("msgTemplate");
+  var msgDisplay  = document.getElementById("messages");
+
+  var data = {
+    username: data.user,
+    message: ": " + data.message
+  };
+
+  
+
+  var clonedTemplate = instantiateNode(msgTemplate,data);
+  clonedTemplate.style.display = "inline";
+  msgDisplay.appendChild(clonedTemplate);
+  window.scrollTo(0,document.body.scrollHeight);
+});
 
 function instantiateNode(node){
 	var clonedNode = node.cloneNode(false);

@@ -9,12 +9,14 @@ var clientList = [];
 // INDEX & USERNAME ROUTE
 
 // user=([%20]*\w+[%20]*)
-addRoute("GET", /^\/\?user=\w+$/,/user=(\w+)/,function(req, res, data) {
+addRoute("GET", /\?user=[^&$#@!]+/,/(user=)([^&$#@!]+)/,function(req, res, data) {
 	if(usernames.indexOf(data.user) != -1){
 		clientList.push(res);
 		res.name = data.user;
+		//console.log("within if, res.name is "+ res.name);
 	} else {
 		usernames.push(data.user);
+		//console.log("in else, data.user is"+ data.user);
 		data.event = "enter";
 		dataStr = JSON.stringify(data);
 		res.write(dataStr);
@@ -23,7 +25,7 @@ addRoute("GET", /^\/\?user=\w+$/,/user=(\w+)/,function(req, res, data) {
 	}
 });
 // MESSAGE ROUTE
-addRoute("GET", /^\/\?user=.+\&message=[^\&]+$/,/user=(\w+)&message=(.+)/,function(req, res, data) {
+addRoute("GET", /\/\?user=.+&message=[^&]+/,/user=(([^&$#@!])+)&message=(.+)/,function(req, res, data) {
 	res.name = data.user;
 	// REPLACE ASCII CODE
 	data.message = data.message.split('%20').join(' ').split('%27').join('\'');
@@ -53,6 +55,7 @@ function broadcast(dataObj){
 	// WRITE TO ALL USERS CONNECTED
 	clientList.forEach(function(participant) {
 		participant.write(dataObj);
+		//console.log("client name: "+dataObj);
 		participant.end();
 	});
 	clientList = [];
@@ -70,6 +73,7 @@ function addRoute(method,url,data,handler){
 }
 function resolve(req,res){
 	var queryString = req.url;
+	console.log("queryString is " + queryString);
 	for(var i = 0; i < routes.length; i++){
 		if(routes[i].method == req.method && routes[i].url.test(queryString)){
 			queryData = {
@@ -77,8 +81,13 @@ function resolve(req,res){
 				message:''
 			};
 			var regex = routes[i].data;
-			queryData.user = regex.exec(queryString)[1];
-			queryData.message = regex.exec(queryString)[2];
+				console.log("queryString is "+queryString);
+				//console.log(regex.exec(queryString)[2]);
+			var userMessageArr=regex.exec(queryString);
+			queryData.user = userMessageArr[1];
+			queryData.message = userMessageArr[userMessageArr.length-1];
+				//console.log("queryData.message is " + queryData.message);
+				console.log("queryString, when regexed, is "+userMessageArr);
 			routes[i].handler(req,res,queryData);
 		}
 	}

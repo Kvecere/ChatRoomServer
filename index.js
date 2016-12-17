@@ -4,6 +4,7 @@ function repeatedlySendRequest(username) {
 	req.send(null);
 	req.addEventListener("load", function() {     
     var data = JSON.parse(req.responseText);
+    console.log("emitting "+data.event+" and "+data);
     chatServer.emit(data.event,data);
     repeatedlySendRequest(username);
 	}); 
@@ -17,15 +18,16 @@ EventEmitter.prototype.on=function(eventStr, handler) {
 	// value of [handler] if it doesn’t exist (i.e., if no
 	// eventListeners for event); push it to the array
 	// otherwise modify this.eventListeners[eventStr];
-	var seinfeld=this.eventListeners[eventStr];
-	if(!seinfeld){//seinfeld isnt undefined
-		seinfeld=[handler];
+	this.eventListeners[eventStr];
+	if(!this.eventListeners[eventStr]){//seinfeld isnt undefined
+		this.eventListeners[eventStr]=[handler];
 	}
 	else{//seinfeld is undefined ()
-		seinfeld.push(handler);
+		this.eventListeners[eventStr].push(handler);
 	}
 }
 EventEmitter.prototype.emit = function(eventStr){
+	console.log(this.eventListeners.message);
   var args = Array.prototype.slice.call(arguments,1);
 
   if(eventStr in this.eventListeners){
@@ -46,6 +48,7 @@ chatServer.on("leave",function(data){
 });
 
 chatServer.on("message",function(data){
+	
   var msgTemplate = document.getElementById("msgTemplate");
   var msgDisplay  = document.getElementById("messages");
 
@@ -53,47 +56,36 @@ chatServer.on("message",function(data){
     username: data.user,
     message: ": " + data.message
   };
-
-  
-
+console.log("sending message " + data.message);
   var clonedTemplate = instantiateNode(msgTemplate,data);
   clonedTemplate.style.display = "inline";
   msgDisplay.appendChild(clonedTemplate);
   window.scrollTo(0,document.body.scrollHeight);
 });
 
-function instantiateNode(node){
+function instantiateNode(node,data){
 	var clonedNode = node.cloneNode(false);
 	
 	if(clonedNode.nodeType == document.ELEMENT_NODE){
 	  for(var i = 0; i < node.childNodes.length;i++){
-		clonedNode.appendChild(instantiateNode(node.childNodes[i]));
+		clonedNode.appendChild(instantiateNode(node.childNodes[i],data));
 	  }
 	}
-
 	if(clonedNode.nodeType == document.TEXT_NODE){
 	  var matches = clonedNode.nodeValue.match(/{{.+}}/g);
-
 	  if(matches != null){
 		for(var j = 0; j < matches.length;j++){
 		  var match = (/{{(.+)}}/g).exec(clonedNode.nodeValue)[1];
-
+		  console.log(match+"e'wkfawef");
 		  clonedNode.nodeValue = clonedNode.nodeValue.replace(matches[j],data[match]);
 		}
 	  } 
 	}
 	return clonedNode;
-  } 
-  var clonedTemplate = instantiateNode(msgTemplate);
-  clonedTemplate.style.display = "inline";
-  msgDisplay.appendChild(clonedTemplate);
-	}
-		repeatedlySendRequest(username);
-	}); 
 }
 function sendChatEntranceRequest(username){
 	var req = new XMLHttpRequest();   
-	req.open("GET", "http://172.17.14.98:8000/?user=" + username, true);
+	req.open("GET", /*"http://172.17.14.98:8000/?user="*/ "http://localhost:8000/?user="+ username, true);
 	req.send(null);
 	req.addEventListener("load", function(){
 		repeatedlySendRequest(username);
@@ -102,11 +94,9 @@ function sendChatEntranceRequest(username){
 	}); 
 } 
 function sendMessage(username,message){
-  if(message!=''){
 		var req = new XMLHttpRequest();
-		req.open("GET","http://172.17.14.98:8000/?user="+username+"&message="+message,true);
+		req.open("GET",/*"http://172.17.14.98:8000/?user="*/"http://localhost:8000/?user="+username+"&message="+message,true);
 		req.send(null);
-	}
 }
 // AUTO-SELECT USERNAME INPUT FIELD
 window.onload = function(){

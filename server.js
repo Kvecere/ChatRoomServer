@@ -55,7 +55,7 @@ function broadcast(dataObj){
 	// WRITE TO ALL USERS CONNECTED
 	clientList.forEach(function(participant) {
 		participant.write(dataObj);
-		//console.log("client name: "+dataObj);
+		console.log("client name: "+dataObj);
 		participant.end();
 	});
 	clientList = [];

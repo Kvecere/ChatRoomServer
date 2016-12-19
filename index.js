@@ -4,7 +4,6 @@ function repeatedlySendRequest(username) {
 	req.send(null);
 	req.addEventListener("load", function() {     
     var data = JSON.parse(req.responseText);
-    console.log("emitting "+data.event+" and "+data);
     chatServer.emit(data.event,data);
     repeatedlySendRequest(username);
 	}); 
@@ -27,9 +26,8 @@ EventEmitter.prototype.on=function(eventStr, handler) {
 	}
 }
 EventEmitter.prototype.emit = function(eventStr){
-	console.log(this.eventListeners.message);
+	//console.log(this.eventListeners.message);
   var args = Array.prototype.slice.call(arguments,1);
-
   if(eventStr in this.eventListeners){
     this.eventListeners[eventStr].forEach(function(func){
       func.apply(null,args);
@@ -76,7 +74,6 @@ function instantiateNode(node,data){
 	  if(matches != null){
 		for(var j = 0; j < matches.length;j++){
 		  var match = (/{{(.+)}}/g).exec(clonedNode.nodeValue)[1];
-		  console.log(match+"e'wkfawef");
 		  clonedNode.nodeValue = clonedNode.nodeValue.replace(matches[j],data[match]);
 		}
 	  } 
@@ -90,6 +87,7 @@ function sendChatEntranceRequest(username){
 	req.addEventListener("load", function(){
 		repeatedlySendRequest(username);
 		var data = JSON.parse(req.responseText);
+		console.log("req.responseText is "+req.responseText);
 		document.getElementById("messages").innerHTML += "<h1>Welcome to Chat, " + data.user + "</h1>";
 	}); 
 } 
@@ -105,10 +103,10 @@ window.onload = function(){
 // SET USERNAME ON BUTTON CLICK AT LIGHTBOX
 document.getElementById("submitBTN").addEventListener("click",function(){
 	var usr = document.getElementById("usr").value;
-	console.log(usr);
+	//console.log(usr);
 	//SET HIDDEN INPUT VALUE TO USERNAME
 	// if(usr=='' || usr.match(/\S/g)!=null){//.true if it contains at least 1 non-whitespace char
-		console.log(usr);
+		//console.log(usr);
 		var hiddenUser = document.getElementById("hiddenUsr").value = usr;
 		window.location.href = "#usernameRequest";
 			// AUTO-SELECT MESSAGE INPUT FIELD

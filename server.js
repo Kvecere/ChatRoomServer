@@ -6,17 +6,16 @@ var routes = [];
 var usernames = [];
 // ARRAY HOLDING REPONSE OBJECTS
 var clientList = [];
-// INDEX & USERNAME ROUTE
 
 // user=([%20]*\w+[%20]*)
-addRoute("GET", /\?user=[^&$#@!]+/,/(user=)([^&$#@!]+)/,function(req, res, data) {
-	if(usernames.indexOf(data.user) != -1){
+//INDEX & USERNAME ROUTE
+addRoute("GET", /\?user=[^&$#@!]+/,/user=([^&$#@!]+)/,function(req, res, data) {
+	if(usernames.indexOf(data.user) != -1){//username taken, add as a response.
 		clientList.push(res);
 		res.name = data.user;
-		//console.log("within if, res.name is "+ res.name);
-	} else {
+		console.log("res.name is "+res.name);
+	} else {//username not taken, add it in
 		usernames.push(data.user);
-		//console.log("in else, data.user is"+ data.user);
 		data.event = "enter";
 		dataStr = JSON.stringify(data);
 		res.write(dataStr);
@@ -26,7 +25,7 @@ addRoute("GET", /\?user=[^&$#@!]+/,/(user=)([^&$#@!]+)/,function(req, res, data)
 });
 // MESSAGE ROUTE
 addRoute("GET", /\/\?user=.+&message=[^&]+/,/user=(([^&$#@!])+)&message=(.+)/,function(req, res, data) {
-	res.name = data.user;
+	res.name = data.user
 	// REPLACE ASCII CODE
 	data.message = data.message.split('%20').join(' ').split('%27').join('\'');
 	data.event = "message";
@@ -84,7 +83,7 @@ function resolve(req,res){
 				console.log("queryString is "+queryString);
 				//console.log(regex.exec(queryString)[2]);
 			var userMessageArr=regex.exec(queryString);
-			queryData.user = userMessageArr[1];
+			queryData.user = userMessageArr[1].split('%20').join(' ');
 			queryData.message = userMessageArr[userMessageArr.length-1];
 				//console.log("queryData.message is " + queryData.message);
 				console.log("queryString, when regexed, is "+userMessageArr);
